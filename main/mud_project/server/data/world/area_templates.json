@@ -1,0 +1,150 @@
+{
+    "town_square": {
+      "name": "Town Square",
+      "description": "The bustling heart of the town, where paths from all directions meet.",
+      "flags": ["safe_zone", "no_combat"],
+      "default_room": "center",
+      "rooms": {
+        "center": {
+          "name": "Center of Town Square",
+          "description": "You stand in the center of a large, open square. A majestic fountain bubbles in the middle, surrounded by benches and colorful flower beds.",
+          "exits": {
+            "north": "north_street",
+            "south": "south_street",
+            "east": "market_entrance",
+            "west": "tavern_entrance"
+          },
+          "objects": [
+            {"id": "fountain", "name": "Town Fountain", "description": "A grand fountain with intricate carvings of local heroes."}
+          ]
+        },
+        "north_street": {
+          "name": "North Street",
+          "description": "A wide, cobblestone street leading north out of the square. Tall buildings line both sides.",
+          "exits": {
+            "south": "center",
+            "north": "town_gate"
+          }
+        },
+        "south_street": {
+          "name": "South Street",
+          "description": "A busy street heading south from the square. The smell of fresh bread wafts from a nearby bakery.",
+          "exits": {
+            "north": "center",
+            "south": "residential_area"
+          }
+        },
+        "market_entrance": {
+          "name": "Market Entrance",
+          "description": "The entrance to the town's lively market. Colorful stalls and the chatter of merchants greet you.",
+          "exits": {
+            "west": "center",
+            "east": "market_square"
+          }
+        },
+        "tavern_entrance": {
+          "name": "Tavern Entrance",
+          "description": "The entrance to the town's favorite tavern. Sounds of laughter and clinking mugs can be heard from inside.",
+          "exits": {
+            "east": "center",
+            "west": "tavern_interior"
+          }
+        }
+      },
+      "npcs": [
+        {
+          "id": "town_crier",
+          "name": "Town Crier",
+          "description": "A loud-voiced man in official garb, ready to announce the latest news.",
+          "spawn_room": "center",
+          "dialogue": {
+            "greeting": "Hear ye, hear ye! Welcome to our fair town!",
+            "farewell": "Stay safe, and remember to check the notice board for the latest news!"
+          }
+        },
+        {
+          "id": "market_vendor",
+          "name": "Friendly Vendor",
+          "description": "A cheerful woman managing a stall filled with fresh produce.",
+          "spawn_room": "market_entrance",
+          "dialogue": {
+            "greeting": "Welcome to the market! Looking for any fresh fruits or vegetables today?",
+            "farewell": "Thank you for stopping by! Come again soon!"
+          }
+        }
+      ]
+    },
+    "dark_forest": {
+      "name": "Dark Forest",
+      "description": "A foreboding forest with ancient trees and twisting paths.",
+      "flags": ["outdoor", "dangerous"],
+      "default_room": "forest_entrance",
+      "rooms": {
+        "forest_entrance": {
+          "name": "Forest Entrance",
+          "description": "The trees loom before you, their branches creating a canopy that blocks most of the sunlight.",
+          "exits": {
+            "north": "dense_woods",
+            "south": "town_gate"
+          }
+        },
+        "dense_woods": {
+          "name": "Dense Woods",
+          "description": "The forest grows thicker here. Strange sounds echo in the distance.",
+          "exits": {
+            "south": "forest_entrance",
+            "east": "clearing",
+            "west": "dark_path"
+          }
+        },
+        "clearing": {
+          "name": "Forest Clearing",
+          "description": "A small clearing in the woods. Moonlight filters through the trees, illuminating a mysterious stone altar.",
+          "exits": {
+            "west": "dense_woods"
+          },
+          "objects": [
+            {"id": "stone_altar", "name": "Stone Altar", "description": "An ancient altar covered in strange runes. It seems to hum with hidden power."}
+          ]
+        },
+        "dark_path": {
+          "name": "Dark Path",
+          "description": "A narrow, winding path shrouded in shadows. The air feels heavy and oppressive.",
+          "exits": {
+            "east": "dense_woods",
+            "north": "monster_den"
+          }
+        },
+        "monster_den": {
+          "name": "Monster Den",
+          "description": "A foreboding cave entrance. Claw marks and bones litter the ground.",
+          "exits": {
+            "south": "dark_path"
+          }
+        }
+      },
+      "npcs": [
+        {
+          "id": "forest_guardian",
+          "name": "Ancient Tree Spirit",
+          "description": "A mystical being that seems to emerge from the very bark of an old oak tree.",
+          "spawn_room": "clearing",
+          "dialogue": {
+            "greeting": "Who dares to enter the realm of the ancient forest?",
+            "farewell": "May the spirits of the forest guide your path."
+          }
+        },
+        {
+          "id": "forest_monster",
+          "name": "Shadowy Beast",
+          "description": "A menacing creature with glowing eyes and sharp claws.",
+          "spawn_room": "monster_den",
+          "combat_stats": {
+            "health": 100,
+            "attack": 15,
+            "defense": 10
+          }
+        }
+      ]
+    }
+  }

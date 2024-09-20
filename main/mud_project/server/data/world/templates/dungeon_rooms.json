@@ -1,0 +1,22 @@
+{
+    "room_templates": [
+      {
+        "type": "dungeon_entrance",
+        "name": "Dungeon Entrance",
+        "description": "A dark, foreboding entrance to a dungeon.",
+        "exits": {
+          "north": {"type": "dungeon_corridor", "chance": 1.0},
+          "east": {"type": "dungeon_room", "chance": 0.5},
+          "west": {"type": "dungeon_room", "chance": 0.5}
+        },
+        "features": ["torch", "cobwebs"],
+        "npc_chances": [
+          {"type": "guard", "chance": 0.8, "max": 2},
+          {"type": "rat", "chance": 0.5, "max": 3}
+        ],
+        "item_chances": [
+          {"type": "treasure_chest", "chance": 0.3, "max": 1}
+        ]
+      }
+    ]
+  }
