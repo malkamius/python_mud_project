@@ -1,13 +1,16 @@
 import asyncio
 from ..server.connections.base_connection import BaseConnection
 from ..server.connections.telnet_connection import TelnetConnection
+
 from typing import List
 
 class ConnectionManager:
     connections : List
+    
     def __init__(self, game_loop):
         self.connections : List[BaseConnection] = []
         self.game_loop = game_loop
+        game_loop.connection_manager = self
 
     async def handle_new_connection(self, reader, writer):
         connection = TelnetConnection(reader, writer, self)
@@ -21,7 +24,7 @@ class ConnectionManager:
     async def remove_connection(self, connection):
         if connection in self.connections:
             self.connections.remove(connection)
-            await self.game_loop.on_player_disconnect(connection)
+            self.game_loop.on_player_disconnect(connection)
 
     async def broadcast(self, message, exclude=None):
         for connection in self.connections:

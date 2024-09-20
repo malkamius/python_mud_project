@@ -2,7 +2,6 @@
 __pycache__
 .github
 .devcontainer
-.vscode
 node_modules
 *.sqlite*
 package.json

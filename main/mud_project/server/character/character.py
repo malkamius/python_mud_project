@@ -14,10 +14,11 @@ class CharacterPositions(IntEnum):
     Standing = 8
 
 class Character:
-    name : str = ""
-    short_description : str = ""
-    long_description : str = ""
-    room : RoomTemplate = None
+    def __init__(self):
+        self.name : str = ""
+        self.short_description : str = ""
+        self.long_description : str = ""
+        self.room : RoomTemplate = None
     
     def send(self, data):
         pass

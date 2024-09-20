@@ -10,14 +10,17 @@ class PlayerCharacterStates(Enum):
     Playing = 3
 
 class PlayerCharacter(CharacterBase):
-    PasswordHash : str
-    Connection : BaseConnection
-    State : PlayerCharacterStates
-    OutBuffer : str = ""
-    InBuffer : str = ""
 
     def __init__(self):
+        super().__init__()
         self.State = PlayerCharacterStates.Connected
+        self.PasswordHash : str
+        self.Connection : BaseConnection
+        self.State : PlayerCharacterStates
+        self.OutBuffer : str = ""
+        self.InBuffer : str = ""
+        self.NoCommand : bool = True
+        self.SentPromp : bool = False
 
     def send(self, message: str):
         if self.Connection != None:

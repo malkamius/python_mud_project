@@ -1,6 +1,8 @@
 import asyncio
 import time
 import re
+import asyncio
+
 from typing import List
 from ..server.connection_manager import ConnectionManager
 from ..server.connections.base_connection import BaseConnection
@@ -10,10 +12,13 @@ from .commands import commands
 from .character_commands.information.look import look as do_look
 
 class GameLoop:
-    connection_manager : ConnectionManager
+    
 
-    def __init__(self, world_manager : WorldManager, tick_rate=4):
-        self.world_manager = world_manager
+    def __init__(self, game_loaded : asyncio.Event, tick_rate=4):
+        self.connection_manager : ConnectionManager = None
+        self.world_manager : WorldManager = None
+        self.game_loaded = game_loaded
+        
         self.tick_rate = tick_rate
         self.tick_interval = 1.0 / tick_rate
         self.is_running = False
@@ -24,11 +29,14 @@ class GameLoop:
         line = None
         if await character.Connection.buffer_has_line():
             line = await character.Connection.buffer_read_line()
+            character.NoCommand = False
             await self.handle_command(character, line)
     
     async def handle_command(self, character : PlayerCharacter, line : str):
         if(character.State == PlayerCharacterStates.Playing):
-            if " " in line:
+            if line.strip() == "":
+                character.send("\r\n")
+            elif " " in line:
                 lookupname, args = line.split(" ", 1)
                 lookupname = lookupname.lower()
             else:
@@ -43,9 +51,12 @@ class GameLoop:
         else:
             character.send(f"You sent the line: {line}\r\n")
 
-    async def start(self):
+    async def start(self, connection_manager : ConnectionManager, world_manager : WorldManager):
+        self.connection_manager = connection_manager
+        self.world_manager = world_manager
         self.is_running = True
         self.bob_count = 1
+
         while self.is_running:
             start_time = time.time()
             
@@ -59,6 +70,7 @@ class GameLoop:
                 continue
 
             for character in self.players:
+                character.NoCommand = True
                 try:
                     await self.process_input(character)
                 except:
@@ -84,10 +96,16 @@ class GameLoop:
                 if len(character.OutBuffer) > 0 and character.Connection != None:
                     try:
                         text = re.sub(r'(?<!\r)\n', '\r\n', character.OutBuffer)
+
+                        #if character.NoCommand == False and character.SentPromp == True and not text.startswith("\r\n") and not text.startswith("\n"):
+                        #    text = "\r\n" + text
                         if character.State == PlayerCharacterStates.Playing and not text.endswith("\n"):
                             text = text + "\r\n"
                         if character.State == PlayerCharacterStates.Playing:
-                            text = text + "\r\n<100%hp 100%m 100%mv> "
+                            if not text.endswith("\r\n\r\n") and text != "\r\n":
+                                text = text + "\r\n"
+                            text = text + "<100%hp 100%m 100%mv> "
+                            character.SentPromp = True
                         await character.Connection.send(text)
                     except:
                         print("Failed to send out buffer")
@@ -153,18 +171,19 @@ class GameLoop:
         # This could include nearby events, status changes, etc.
         return "Game world update placeholder"
 
-    async def add_player(self, player: PlayerCharacter):
+    def add_player(self, player: PlayerCharacter):
         self.players.append(player)
 
-    async def remove_player(self, player: PlayerCharacter):
+    def remove_player(self, player: PlayerCharacter):
         if player in self.players:
             self.players.remove(player)
 
     async def on_player_connect(self, connection: BaseConnection):
+        await self.game_loaded.wait()
         player = PlayerCharacter()
         player.Connection = connection
         player.State = PlayerCharacterStates.Connected
-        await self.add_player(player)
+        self.add_player(player)
         # Perform any necessary setup for the newly connected player
         welcome_message = "Welcome to the MUD!\r\nEnter your name: "
         
@@ -174,10 +193,10 @@ class GameLoop:
         #await connection.send(welcome_message)
         player.State = PlayerCharacterStates.GetName
 
-    async def on_player_disconnect(self, connection: BaseConnection):
+    def on_player_disconnect(self, connection: BaseConnection):
         player = self.find_player_by_connection(connection)
         if player:
-            await self.remove_player(player)
+            self.remove_player(player)
         # Perform any necessary cleanup for the disconnected player
 
     def find_player_by_connection(self, connection: BaseConnection) -> PlayerCharacter:

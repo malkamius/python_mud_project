@@ -3,6 +3,8 @@ from ..area_template import AreaTemplate
 import xml.etree.ElementTree as ET
 from ..room_template import RoomTemplate
 from typing import Dict
+import asyncio
+import aiofiles
 
 def clean_text(text):
     if text is None:
@@ -17,32 +19,39 @@ def clean_text(text):
     return re.sub(r'(\n|\r)\s+', replace_func, text)
 
 class CSLAreaTemplate(AreaTemplate):
-    filepath : str
     
     def __init__(self, world_manager, filepath : str, header_only : bool = False):
-        if header_only == False:
-            self.filepath = filepath
-            tree = ET.parse(filepath)
+        super().__init__()
+        self.filepath : str = filepath
+        self.world_manager = world_manager
+            
+    
+    async def load(self):
+        async with aiofiles.open(self.filepath, mode='r', encoding='utf-8') as f:
+            content = await f.read()
+    
+        # Parse the XML content
+        tree = ET.fromstring(content)
 
-            areadata = tree.find("AreaData")
+        areadata = tree.find("AreaData")
 
-            self.name = areadata.get("Name") or areadata.findtext("Name")
+        self.name = areadata.get("Name") or areadata.findtext("Name")
 
-            for roomdata in tree.findall("Rooms/Room"):
-                room = RoomTemplate(None)
+        for roomdata in tree.findall("Rooms/Room"):
+            room = RoomTemplate(None)
+            
+            room.template_id = int(roomdata.findtext("VNum"))
+            room.name = roomdata.findtext("Name")
+            room.description = clean_text(roomdata.findtext("Description"))
+            room.exits = {}
+            from ..room_template import DirectionEnum, ExitData
+
+            for exitnode in roomdata.findall("Exits/Exit"):
+                direction = DirectionEnum[exitnode.findtext("Direction")]
+                exitdata = ExitData()
+                exitdata.DestinationVnum = int(exitnode.findtext("Destination"))
+                room.exits[direction] = exitdata
                 
-                room.template_id = int(roomdata.findtext("VNum"))
-                room.name = roomdata.findtext("Name")
-                room.description = clean_text(roomdata.findtext("Description"))
-                room.exits = {}
-                from ..room_template import DirectionEnum, ExitData
-
-                for exitnode in roomdata.findall("Exits/Exit"):
-                    direction = DirectionEnum[exitnode.findtext("Direction")]
-                    exitdata = ExitData()
-                    exitdata.DestinationVnum = int(exitnode.findtext("Destination"))
-                    room.exits[direction] = exitdata
-                    
-                self.room_templates[room.template_id] = room
-                if world_manager:
-                    world_manager.add_template(room)
+            self.room_templates[room.template_id] = room
+            if self.world_manager:
+                await self.world_manager.add_template(room)

@@ -2,9 +2,7 @@ import asyncio
 from ...server.connections.telnet_connection import TelnetConnection
 
 class TelnetProtocol:
-    def __init__(self, world_manager, game_loop, connection_manager):
-        self.world_manager = world_manager
-        self.game_loop = game_loop
+    def __init__(self, connection_manager):
         self.connection_manager = connection_manager
 
     async def handle_connection(self, reader, writer):

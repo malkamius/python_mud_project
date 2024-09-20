@@ -5,18 +5,18 @@ from .room_template import RoomTemplate
 from .npc_template import NPCTemplate
 
 class AreaTemplate:
-    name : str = ""
-    credits : str = ""
-    saved : bool = True
-    info : str = ""
-    vnum_start : int = 0
-    vnum_end : int = 0
-    builders : str = ""
-    security : int = 60
-    last_reset : struct_time
+    
 
-    room_templates : Dict[int, RoomTemplate] = {}
-    npc_templates : Dict[int, NPCTemplate] = {}
+    def __init__(self):
+        self.name : str = ""
+        self.credits : str = ""
+        self.saved : bool = True
+        self.info : str = ""
+        self.vnum_start : int = 0
+        self.vnum_end : int = 0
+        self.builders : str = ""
+        self.security : int = 60
+        self.last_reset : struct_time
 
-    def __init__():
-        pass
+        self.room_templates : Dict[int, RoomTemplate] = {}
+        self.npc_templates : Dict[int, NPCTemplate] = {}

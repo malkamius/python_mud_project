@@ -3,8 +3,10 @@ import random
 from enum import Enum
 from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json, config
-from dataclasses import dataclass, field
-from dataclasses_json import dataclass_json, config
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..character.character import Character
 
 class DirectionEnum(Enum):
     North = 0
@@ -23,16 +25,14 @@ class ReverseDirectionEnum(Enum):
     Down = DirectionEnum.Up
 
 class RoomTemplate:
-    
+
+
     def __init__(self, template_data: Dict[str, Any] = None):
         from ..character.character import Character
         self.characters : List[Character] = []
         self.exits : List[ExitData] = []
-        def send(text: str, ignore: List[Character] = None):
-            for target in self.characters:
-                if ignore == None or not target in ignore:
-                    target.send(text)
-        self.send = send
+
+        #self.send = send
         if template_data != None:
             
             #self.items : List[ItemInstance] = []
@@ -44,8 +44,13 @@ class RoomTemplate:
             self.npc_chances: List[Dict[str, Any]] = template_data.get('npc_chances', [])
             self.item_chances: List[Dict[str, Any]] = template_data.get('item_chances', [])
             self.flags: List[str] = template_data.get('flags', [])
-    
-    def GetExit(self, direction: DirectionEnum):
+
+    def send(self, text: str, ignore: List['Character'] = None):
+        for target in self.characters:
+            if ignore == None or not target in ignore:
+                target.send(text)
+
+    def GetExit(self, direction: DirectionEnum) -> 'ExitData': 
         if not direction in self.exits:
             return None
         else:

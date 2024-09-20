@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: mud_project File",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "mud_project",
+            "cwd": "${workspaceFolder}/main",
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [],
+            "justMyCode": false
+        }
+    ]
+}
