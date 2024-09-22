@@ -23,5 +23,5 @@ def look(character : Character, arguments : str):
 
         for other in character.room.characters:
             if other != character:
-                character.send(f"{other.name} stands here.\r\n")
+                character.send(f"{other.name} stands here.\r\n" if not other.long_description else other.long_description.strip() + "\r\n")
                 

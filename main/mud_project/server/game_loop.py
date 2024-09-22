@@ -2,7 +2,7 @@ import asyncio
 import time
 import re
 import asyncio
-
+from logging import getLogger
 from typing import List
 from ..server.connection_manager import ConnectionManager
 from ..server.connections.base_connection import BaseConnection
@@ -17,15 +17,17 @@ class GameLoop:
     
 
     def __init__(self, game_loaded : asyncio.Event, tick_rate=4):
+        from .world.reset_manager import ResetManager
         self.connection_manager : ConnectionManager = None
         self.world_manager : WorldManager = None
         self.game_loaded = game_loaded
-        
+        self.reset_manager : ResetManager = None
         self.tick_rate = tick_rate
         self.tick_interval = 1.0 / tick_rate
         self.is_running = False
         self.players: List[PlayerCharacter] = []
         self.last_tick_time = 0
+        self.logger = getLogger(__name__)
 
     async def process_input(self, character : PlayerCharacter):
         line = None
@@ -140,6 +142,11 @@ class GameLoop:
 
         # Update game world
         #await self.world_manager.update(delta_time)
+        try:
+            if self.reset_manager != None:
+                self.reset_manager.ResetAreas()
+        except Exception as ex:
+            self.logger.error(f"Reset manager failed: {str(ex)}")
 
         # Process player actions
         for player in self.players:

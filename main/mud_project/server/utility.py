@@ -50,3 +50,8 @@ def test_custom_split():
         print(f"Input: {case}")
         print(f"Output: {result}")
         print()
+
+def is_whole_number(value):
+    if isinstance(value, str):
+        return bool(re.match(r'^\-?[0-9]+$', value))
+    return False

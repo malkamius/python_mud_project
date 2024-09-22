@@ -68,6 +68,11 @@ class GameServer:
                 
                 world_manager = CrimsonStainedLandsWorldManager(config['world'], db_handler)
 
+                
+                from .world.reset_manager import ResetManager
+                reset_manager = ResetManager(world_manager)
+                game_loop.reset_manager = reset_manager
+                
                 # Start the server
                 server_task = asyncio.create_task(self.start_servers(config, connection_manager))
 
@@ -88,10 +93,11 @@ class GameServer:
                 end_time = time.time()
                 execution_time_ms = (end_time - start_time) * 1000
                 print(f"Execution time: {execution_time_ms} milliseconds to fix exits")
+
                 
                 #await world_manager.load_world_state()
 
-                #reset areas
+                
                 
                 self.game_loaded.set()
                 # Initialize game loop

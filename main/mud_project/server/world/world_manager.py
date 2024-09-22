@@ -5,12 +5,14 @@ from logging import getLogger
 
 from .room_template import RoomTemplate
 from .area_template import AreaTemplate
+from .npc_template import NPCTemplate
+
 class WorldManager:
     def __init__(self, configWorld, db_handler):
         self.logger = getLogger(__name__)
         self.area_templates: Dict[str, AreaTemplate] = {}
         self.room_templates: Dict[int, RoomTemplate] = {}
-
+        self.npc_templates: Dict[int, NPCTemplate] = {}
         #self.load_templates()
 
     async def load_templates(self):
