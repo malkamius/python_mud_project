@@ -20,7 +20,7 @@ def clean_text(text):
 
 class CSLAreaTemplate(AreaTemplate):
     
-    def __init__(self, world_manager, filepath : str, header_only : bool = False):
+    def __init__(self, world_manager, filepath : str):
         super().__init__()
         self.filepath : str = filepath
         self.world_manager = world_manager

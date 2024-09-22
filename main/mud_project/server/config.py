@@ -6,6 +6,8 @@ DEFAULT_CONFIG = {
     'server': {
         'host': 'localhost',
         'port': 3000,
+        'ssl_port': 3001,
+        'websocket_port': 3002,
         'max_connections': 100
     },
     'database': {
@@ -26,8 +28,10 @@ DEFAULT_CONFIG = {
     },
     'protocols': {
         'telnet': True,
-        'ssl': False,
-        'websocket': False
+        'ssl': True,
+        'websocket': True,
+        'ssl-cert': "localhost_cert.pem",
+        'ssl-key': 'localhost_key.pem'
     }
 }
 

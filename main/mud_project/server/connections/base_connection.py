@@ -1,11 +1,17 @@
 from abc import ABC, abstractmethod
 from uuid import uuid1
 import asyncio
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..connection_manager import ConnectionManager
 
 class BaseConnection(ABC):
     id : str
 
     def __init__(self, connection_manager):
+        from ..protocols.telnet_handler import TelnetHandler
+        self.telnet_handler : TelnetHandler = None
         self.connection_manager = connection_manager
         self.player = None
         self.is_authenticated = False

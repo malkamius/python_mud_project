@@ -1,6 +1,7 @@
 import asyncio
 from ..server.connections.base_connection import BaseConnection
 from ..server.connections.telnet_connection import TelnetConnection
+from ..server.connections.websocket_connection import WebSocketConnection
 
 from typing import List
 
@@ -16,6 +17,13 @@ class ConnectionManager:
         connection = TelnetConnection(reader, writer, self)
         await self.add_connection(connection)
         asyncio.create_task(connection.handle_connection())
+
+    
+    async def handle_new_websocket_connection(self, websocket, path):
+        connection = WebSocketConnection(websocket, self)
+        await self.add_connection(connection)
+        await connection.handle_connection()
+
 
     async def add_connection(self, connection):
         self.connections.append(connection)

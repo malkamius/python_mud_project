@@ -1,4 +1,4 @@
-from .character import Character as CharacterBase
+from .character import Character as CharacterBase, CharacterAttributes
 from ..connections.base_connection import BaseConnection
 import asyncio
 from enum import Enum
@@ -21,6 +21,7 @@ class PlayerCharacter(CharacterBase):
         self.InBuffer : str = ""
         self.NoCommand : bool = True
         self.SentPromp : bool = False
+        
 
     def send(self, message: str):
         if self.Connection != None:

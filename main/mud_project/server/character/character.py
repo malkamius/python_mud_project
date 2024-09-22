@@ -1,6 +1,6 @@
 
 from ..world.room_template import RoomTemplate
-from enum import IntEnum, auto
+from enum import IntEnum, auto, Enum
 
 class CharacterPositions(IntEnum):
     Dead = 0
@@ -13,13 +13,17 @@ class CharacterPositions(IntEnum):
     Fighting = 7
     Standing = 8
 
+class CharacterAttributes(Enum):
+    Color = auto()
+
 class Character:
     def __init__(self):
         self.name : str = ""
         self.short_description : str = ""
         self.long_description : str = ""
         self.room : RoomTemplate = None
-    
+        self.attributes : set[CharacterAttributes] = set()
+        
     def send(self, data):
         pass
 

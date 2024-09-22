@@ -10,6 +10,8 @@ from ..server.character.player_character import PlayerCharacter, PlayerCharacter
 from .world.world_manager import WorldManager
 from .commands import commands
 from .character_commands.information.look import look as do_look
+from .protocols.telnet_handler import TelnetOptions
+from .character.character import CharacterAttributes
 
 class GameLoop:
     
@@ -87,6 +89,12 @@ class GameLoop:
                         defaultroom.send(f"{character.name} has awakened from their slumber.")
                         character.CharacterToRoom(defaultroom)
                         character.State = PlayerCharacterStates.Playing
+                        if(character.Connection.telnet_handler != None):
+                            if(TelnetOptions.ColorAnsi in character.Connection.telnet_handler.telnet_options or 
+                               TelnetOptions.Color256 in character.Connection.telnet_handler.telnet_options or
+                               TelnetOptions.ColorRGB in character.Connection.telnet_handler.telnet_options):
+                                character.attributes.add(CharacterAttributes.Color)
+                                character.send("Color {gON{x.\r\n")
                         do_look(character, "")
                     #else:
                     #    character.send("PULSE\r\n")

@@ -3,6 +3,7 @@ import os
 import asyncio
 import logging
 import time
+import ssl
 
 # Add the project root directory to the Python path
 project_root = os.path.abspath(os.path.dirname(__file__))
@@ -22,6 +23,8 @@ from .game_loop import GameLoop
 from .connection_manager import ConnectionManager
 from .world.CrimsonStainedLands.world_manager import CrimsonStainedLandsWorldManager
 from .commands import load_commands_from_folder
+from .connection_manager import ConnectionManager
+import websockets
 
 class GameServer:
     
@@ -120,11 +123,39 @@ class GameServer:
             await self.shutdown(asyncio.get_event_loop())
 
     async def start_servers(self, config, connection_manager):
-        telnet_protocol = TelnetProtocol(connection_manager)
-
         host = config['server']['host']
         port = config['server']['port']
+        ssl_port = config['server']['ssl_port']
+        websocket_port = config['server']['websocket_port']
+        host_ssl = config['protocols']['ssl']
+        host_websocket = config['protocols']['websocket']
+        tasks = []
+        self.connection_manager = connection_manager
         
+        telnet_task = asyncio.create_task(self.start_telnet_server(host, port, connection_manager))
+        tasks.append(telnet_task)
+
+        try:
+            ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+            ssl_context.load_cert_chain(config['protocols']['ssl-cert'], config['protocols']['ssl-key'])
+
+            if host_ssl:
+                ssl_telnet_task = asyncio.create_task(self.start_ssl_telnet_server(host, ssl_port, connection_manager, ssl_context))
+                tasks.append(ssl_telnet_task)
+            
+            
+        except:
+            self.logger.error("Failed to create SSL Context")
+            ssl_context = None
+
+        if host_websocket:
+            websocket_task = asyncio.create_task(self.start_websocket_server(host, websocket_port, ssl_context))
+            tasks.append(websocket_task)
+            
+        await asyncio.gather(tasks)
+    
+    async def start_telnet_server(self, host, port, connection_manager):
+        telnet_protocol = TelnetProtocol(connection_manager)
         def protocol_factory():
             return lambda reader, writer: telnet_protocol.handle_connection(reader, writer)
 
@@ -142,3 +173,31 @@ class GameServer:
                 print('Server cancelled')
             finally:
                 server.close()
+
+    async def start_ssl_telnet_server(self, host, port, connection_manager, ssl_context):
+        telnet_protocol = TelnetProtocol(connection_manager)
+        def protocol_factory():
+            return lambda reader, writer: telnet_protocol.handle_connection(reader, writer)
+
+        
+        server = await asyncio.start_server(
+            protocol_factory(), host, port, ssl=ssl_context)
+        
+        addr = server.sockets[0].getsockname()
+        self.logger.info(f'Serving SSL on {addr}')
+
+        async with server:
+            try:
+                await server.serve_forever()
+            except asyncio.CancelledError as e:
+                print('Server cancelled')
+            finally:
+                server.close()
+                
+    async def start_websocket_server(self, host, port, ssl_context = None):
+        ssl_context = None
+        try:
+            websocket_server = await websockets.serve(self.connection_manager.handle_new_websocket_connection, host, port, ssl=ssl_context)
+        except Exception as e:
+            self.logger.error("Error hosting web socket: " + str(e))
+        await websocket_server.wait_closed()

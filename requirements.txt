@@ -2,3 +2,4 @@ aiosqlite
 pyyaml
 dataclasses-json
 aiofiles
+websockets

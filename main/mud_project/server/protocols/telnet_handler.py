@@ -1,6 +1,8 @@
 import asyncio
 from typing import Dict, Callable
 from ..connections.base_connection import BaseConnection
+import enum
+from ..utility import string_prefix
 # Telnet protocol constants
 IAC = bytes([255])
 DONT = bytes([254])
@@ -19,8 +21,27 @@ CHARSET = bytes([42])
 MXP = bytes([91])
 EOR = bytes([25])
 
+class TelnetOptions(enum.Enum):
+    ColorAnsi = enum.auto()
+    Color256 = enum.auto()
+    ColorRGB = enum.auto()
+    Echo = enum.auto()
+    SupressGoAhead = enum.auto()
+    EOR = enum.auto()
+
+telnet_type_options = {
+    "CMUD": [TelnetOptions.ColorAnsi, TelnetOptions.Color256],
+    "Mudlet": [TelnetOptions.ColorAnsi, TelnetOptions.Color256, TelnetOptions.ColorRGB],
+    "Mushclient": [TelnetOptions.ColorAnsi, TelnetOptions.Color256, TelnetOptions.ColorRGB],
+    "TRUECOLOR": [TelnetOptions.ColorRGB],
+    "256COLOR": [TelnetOptions.Color256],
+    "VT100": [TelnetOptions.ColorAnsi],
+    "ANSI": [TelnetOptions.ColorAnsi],
+}
+
 class TelnetHandler:
     def __init__(self, connection : BaseConnection):
+        self.telnet_options : set[TelnetOptions] = set()
         self.connection = connection
         self.buffer = b''
         self.negotiation_table: Dict[bytes, Callable] = {
@@ -36,7 +57,9 @@ class TelnetHandler:
         self.terminal_types = []
         self.char_set = "Windows-1252"
         self.eor = True
+        self.telnet_options.add(TelnetOptions.EOR)
         self.supress_go_ahead = True
+        self.telnet_options.add(TelnetOptions.SupressGoAhead)
         self.echo = False
 
     async def process_input(self, data: bytes) -> bool:
@@ -100,14 +123,18 @@ class TelnetHandler:
     async def handle_supress_go_ahead(self, command: bytes):
         if command in (DO):
             self.supress_go_ahead = True
+            self.telnet_options.add(TelnetOptions.SupressGoAhead)
         else:
             self.supress_go_ahead = False
+            self.telnet_options.discard(TelnetOptions.SupressGoAhead)
 
     async def handle_eor(self, command: bytes):
         if command in (DO):
             self.eor = True
+            self.telnet_options.add(TelnetOptions.EOR)
         else:
             self.eor = False
+            self.telnet_options.discard(TelnetOptions.EOR)
 
     async def handle_ttype(self, command: bytes):
         if command == WILL and not self.will_ttype:
@@ -123,6 +150,11 @@ class TelnetHandler:
         if not terminal_type in self.terminal_types:
             print(f"Client terminal type: {terminal_type}")
             self.terminal_types.append(terminal_type)
+
+            for key, flags in telnet_type_options.items():
+                if terminal_type.lower().endswith(key.lower()):
+                    self.telnet_options.update(flags)
+                            
             await self.send(IAC + SB + TTYPE + bytes([1]) + IAC + SE)
 
         # Handle the terminal type information as needed
