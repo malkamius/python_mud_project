@@ -4,6 +4,7 @@ import signal
 import platform
 import asyncio
 import logging
+import argparse
 
 from concurrent.futures import ThreadPoolExecutor
 from .server.server_main import GameServer
@@ -17,14 +18,34 @@ sys.path.insert(0, project_root)
 
 def signal_handler(sig, frame):
     logger.warning(f"Received signal {sig}: initiating shutdown")
-        
     shutdown_flag.set()
 
-if __name__ == "__main__":
+def run_tests():
+    logger.info("Running tests...")
+    from .server.utility import test_custom_split
+
+    test_custom_split()
+    # Add your test logic here
+    # For example:
+    # import unittest
+    # test_suite = unittest.TestLoader().discover('tests')
+    # unittest.TextTestRunner(verbosity=2).run(test_suite)
+    logger.info("Tests completed.")
+
+def main():
+    parser = argparse.ArgumentParser(description="Game Server")
+    parser.add_argument("--test", action="store_true", help="Run in test mode")
+    args = parser.parse_args()
+
+    if args.test:
+        run_tests()
+        return
+
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     executor = ThreadPoolExecutor(max_workers=10)
     loop.set_default_executor(executor)
+    
     # Setup signal handlers
     for sig in (signal.SIGINT, signal.SIGTERM):
         if platform.system() != 'Windows':
@@ -33,6 +54,7 @@ if __name__ == "__main__":
         else:
             # Windows
             signal.signal(sig, signal_handler)
+
     server = GameServer(shutdown_flag)
     try:
         loop.run_until_complete(server.launch())
@@ -45,4 +67,6 @@ if __name__ == "__main__":
         loop.close()
         executor.shutdown(wait=True, cancel_futures=True)
         logging.info("Exiting . . .")
-    
+
+if __name__ == "__main__":
+    main()

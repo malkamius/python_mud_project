@@ -9,8 +9,9 @@ class ConnectionManager:
     connections : List
     
     def __init__(self, game_loop):
+        from .game_loop import GameLoop
         self.connections : List[BaseConnection] = []
-        self.game_loop = game_loop
+        self.game_loop :GameLoop = game_loop
         game_loop.connection_manager = self
 
     async def handle_new_connection(self, reader, writer):

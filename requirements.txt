@@ -3,3 +3,4 @@ pyyaml
 dataclasses-json
 aiofiles
 websockets
+flask

@@ -12,7 +12,7 @@ from .commands import commands
 from .character_commands.information.look import look as do_look
 from .protocols.telnet_handler import TelnetOptions
 from .character.character import CharacterAttributes
-
+from .utility import custom_split
 class GameLoop:
     
 
@@ -36,15 +36,18 @@ class GameLoop:
     
     async def handle_command(self, character : PlayerCharacter, line : str):
         if(character.State == PlayerCharacterStates.Playing):
-            if line.strip() == "":
+            line = line.lstrip()
+            if line == "":
                 character.send("\r\n")
-            elif " " in line:
-                lookupname, args = line.split(" ", 1)
-                lookupname = lookupname.lower()
-            else:
-                args = ""
-                lookupname = line.lower()
+            # elif " " in line:
+            #     lookupname, args = line.split(" ", 1)
+            #     lookupname = lookupname.lower()
+            # else:
+            #     args = ""
+            #     lookupname = line.lower()
             
+            lookupname, args = custom_split(line)
+
             for command in commands:
                 if len(command.name) >= len(lookupname) and command.name.lower().startswith(lookupname):
                     command.func(character, args)
@@ -183,6 +186,10 @@ class GameLoop:
         self.players.append(player)
 
     def remove_player(self, player: PlayerCharacter):
+        if player.room != None:
+            if player in player.room.characters:
+                player.room.send(f"{player.name} disappears into the void.\r\n", player)
+                player.CharacterFromRoom()
         if player in self.players:
             self.players.remove(player)
 

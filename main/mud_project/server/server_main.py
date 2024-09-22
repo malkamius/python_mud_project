@@ -152,7 +152,7 @@ class GameServer:
             websocket_task = asyncio.create_task(self.start_websocket_server(host, websocket_port, ssl_context))
             tasks.append(websocket_task)
             
-        await asyncio.gather(tasks)
+        await asyncio.gather(*tasks)
     
     async def start_telnet_server(self, host, port, connection_manager):
         telnet_protocol = TelnetProtocol(connection_manager)

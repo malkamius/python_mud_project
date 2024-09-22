@@ -46,8 +46,9 @@ class RoomTemplate:
             self.flags: List[str] = template_data.get('flags', [])
 
     def send(self, text: str, ignore: List['Character'] = None):
+        ignoreIsList = isinstance(ignore, List)
         for target in self.characters:
-            if ignore == None or not target in ignore:
+            if ignore == None or (target != ignore and (not ignoreIsList or not target in ignore)):
                 target.send(text)
 
     def GetExit(self, direction: DirectionEnum) -> 'ExitData': 
